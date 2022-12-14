@@ -26,6 +26,12 @@ enum class Mode
     test
 };
 
+enum class fileType
+{
+    english,
+    typing
+}
+
 // 一単語の構成
 struct WordStruct
 {
@@ -34,7 +40,7 @@ struct WordStruct
     string wordRoma;
 };
 
-void readWordsFile(ifstream&, vector<WordStruct>&);
+void readWordsFile(ifstream&, vector<WordStruct>&, fileType);
 void removeLFCR(vector<WordStruct>&);
 Mode setMode();
 
@@ -43,8 +49,7 @@ int main(int argc, char** argv) {
     vector<WordStruct> wordsList;
     ifstream file;
     string temp;
-    string temp2;
-    
+
     system("chcp 65001 > nul");
     srand(time(NULL));
 
@@ -61,10 +66,17 @@ int main(int argc, char** argv) {
             cout << "ファイルパスを指定してください" << endl;
             cin >> temp;
         } while (!filesystem::exists(temp));
-        file.open(argv[1]);
     }
-    else {
-        file.open(argv[1]);
+
+    file.open(argv[1]);
+    if (!file) {
+        cout << "file error" << endl;
+        return 0;
+    }
+
+    if (!getline(file, temp)) {
+        cout << "file is empty" << endl;
+        return 0;
     }
 
     void readWordsFile(file, wordsList);
@@ -73,26 +85,48 @@ int main(int argc, char** argv) {
 
     mode = setMode();
 
-    switch ((int)mode){
-        case (int)Mode::marathon:
-            break;
-        case (int)Mode::practice:
-            break;
-        case (int)Mode::speed:
-            break;
-        case (int)Mode::test:
-            break;
+    switch ((int)mode) {
+    case (int)Mode::marathon:
+        break;
+    case (int)Mode::practice:
+        break;
+    case (int)Mode::speed:
+        break;
+    case (int)Mode::test:
+        break;
     }
 }
 
-void readWordsFile(ifstream& file, vector<WordStruct>& wordsList){
+void readWordsFile(ifstream& file, vector<WordStruct>& wordsList, fileType ftype) {
+    WordStruct wordTemp;
+    if (ftype == fileType::english) {
+        while (true) {
+            if (!(getline(file, wordTemp.wordMeaning) &&
+                getline(file, wordTemp.word) &&
+                getline(file, wordTemp.wordRoma))) {
+                cout << "file is broken" << endl;
+                return;
+            }
+            wordsList.push_back(wordTemp);
+        }
+    }
+    else {
+        while(true){
+            if(!(getline(file, wordTemp.word) && getline(file, wordTemp.wordRoma))){
+                cout << "file is broken" << endl;
+                return;
+            }
+            wordTemp.wordMeaning = "";
+            wordsList.push_back(wordTemp);
+        }
+    }
+    cout << "succeed to read" << endl;
+}
+
+void removeLFCR(vector<WordStruct>& wordsList) {
 
 }
 
-void removeLFCR(vector<WordStruct>& wordsList){
-
-}
-
-Mode setMode(){
+Mode setMode() {
 
 }
