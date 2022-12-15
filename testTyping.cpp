@@ -17,21 +17,21 @@ using namespace std;
 #define ESCAPE_CODE 0x1B
 #define ARGS_NUM 2
 #define PRACTICE_NUM 30
+#define F_SELECT_MODE 0x01
+#define F_RETRY 0x02
+#define F_EXIT 0x03
 
 // ソフトの実行モード
-enum class Mode
-{
+enum class Mode {
     practice,
     marathon,
     speed,
     test,
-    wordConfig,
-    breakLoop
+    wordConfig
 };
 
 // 一単語の構成
-struct WordStruct
-{
+struct WordStruct {
     string wordMeaning;
     string word;
     string wordRoma;
@@ -41,8 +41,8 @@ bool readWordsFile(ifstream&, vector<WordStruct>&);
 void removeLFCR(vector<WordStruct>&);
 void removeLFCRStr(string&);
 Mode setMode();
-void startTyping();
-void marathonTyping(const vector<WordStruct>&, Mode);
+void startTyping(vector<WordStruct>&, Mode&);
+int marathonTyping(const vector<WordStruct>&);
 
 int main(int argc, char** argv) {
     Mode mode;
@@ -79,20 +79,9 @@ int main(int argc, char** argv) {
     }
 
     mode = setMode();
+    startTyping(wordsList, mode);
 
-    // switch ((int)mode) {
-    // case (int)Mode::marathon:
-    //     break;
-    // case (int)Mode::practice:
-    //     break;
-    // case (int)Mode::speed:
-    //     break;
-    // case (int)Mode::test:
-    //     break;
-    // case (int)Mode::wordConfig:
-    //     break;
-    // case (int)Mode::breakLoop:
-    // }
+    return 0;
 }
 
 // 単語ファイルの読み込み
@@ -115,7 +104,8 @@ bool readWordsFile(ifstream& file, vector<WordStruct>& wordsList) {
         }
         else if (temp == "Typing" || temp == "typing") {
             while (true) {
-                if (!(getline(file, wordTemp.word) && getline(file, wordTemp.wordRoma))) {
+                if (!(getline(file, wordTemp.word) &&
+                    getline(file, wordTemp.wordRoma))) {
                     cout << "file is broken" << endl;
                     return true;
                 }
@@ -139,6 +129,7 @@ bool readWordsFile(ifstream& file, vector<WordStruct>& wordsList) {
     return true;
 }
 
+// 改行コードを取り除く
 void removeLFCR(vector<WordStruct>& wordsList) {
     for (WordStruct i : wordsList) {
         removeLFCRStr(i.wordMeaning);
@@ -147,13 +138,12 @@ void removeLFCR(vector<WordStruct>& wordsList) {
     }
 }
 
+// 改行コードを取り除く
 void removeLFCRStr(string& str) {
-    if (str[str.length() - 1] == '\n') {
+    if (str[str.length() - 1] == '\n')
         str.erase(str.length() - 1);
-    }
-    if (str[str.length() - 1] == '\r') {
+    if (str[str.length() - 1] == '\r')
         str.erase(str.length() - 1);
-    }
 }
 
 Mode setMode() {
@@ -193,22 +183,38 @@ Mode setMode() {
     } while (true);
 }
 
-void startTyping(vector<WordStruct>& WordsList, Mode mode){
-    switch ((int)mode) {
-    case (int)Mode::marathon:
-        break;
-    case (int)Mode::practice:
-        break;
-    case (int)Mode::speed:
-        break;
-    case (int)Mode::test:
-        break;
-    case (int)Mode::wordConfig:
-        break;
-    case (int)Mode::breakLoop:
+void startTyping(vector<WordStruct>& WordsList, Mode& mode) {
+    int flag = 0;
+    while (true) {
+        switch ((int)mode) {
+        case (int)Mode::marathon:
+            flag = marathonTyping(WordsList);
+            break;
+        case (int)Mode::practice:
+            break;
+        case (int)Mode::speed:
+            break;
+        case (int)Mode::test:
+            break;
+        case (int)Mode::wordConfig:
+            break;
+        }
+
+        if (flag == F_EXIT)
+            break;
+        else if (flag == F_SELECT_MODE)
+            mode = setMode();
+        else if (flag == F_RETRY)
+            continue;
     }
 }
 
-void marathonTyping(const vector<WordStruct>& wordsList){
+int marathonTyping(const vector<WordStruct>& wordsList) {
+    for (WordStruct i : wordsList) {
+        cout << i.wordMeaning << endl;
+        cout << i.word << endl;
+        cout << i.wordRoma << endl;
+    }
 
+    return F_EXIT;
 }
