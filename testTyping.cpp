@@ -16,6 +16,7 @@ using namespace std;
 
 #define ESCAPE_CODE 0x1B
 #define ARGS_NUM 2
+#define PRACTICE_NUM 30
 
 // ソフトの実行モード
 enum class Mode
@@ -23,13 +24,8 @@ enum class Mode
     practice,
     marathon,
     speed,
-    test
-};
-
-enum class fileType
-{
-    english,
-    typing
+    test,
+    wordConfig
 };
 
 // 一単語の構成
@@ -40,8 +36,9 @@ struct WordStruct
     string wordRoma;
 };
 
-void readWordsFile(ifstream&, vector<WordStruct>&, fileType);
+bool readWordsFile(ifstream&, vector<WordStruct>&);
 void removeLFCR(vector<WordStruct>&);
+void removeLFCRStr(string&);
 Mode setMode();
 
 int main(int argc, char** argv) {
@@ -55,7 +52,7 @@ int main(int argc, char** argv) {
 
     // 引数チェック
     if (argc != ARGS_NUM) {
-        cout << "引数の個数を確認してください" << endl;
+        cout << "引数を確認してください" << endl;
         return 0;
     }
 
@@ -74,12 +71,10 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    if (!getline(file, temp)) {
-        cout << "file is empty" << endl;
+    if (!readWordsFile(file, wordsList)) {
+        cout << "プログラムを停止します" << endl;
         return 0;
     }
-
-    readWordsFile(file, wordsList);
 
     removeLFCR(wordsList);
 
@@ -94,39 +89,104 @@ int main(int argc, char** argv) {
         break;
     case (int)Mode::test:
         break;
+    case (int)Mode::wordConfig:
+        break;
     }
 }
 
-void readWordsFile(ifstream& file, vector<WordStruct>& wordsList, fileType ftype) {
+// 単語ファイルの読み込み
+// 成功時はtrue, 失敗時はfalseを返す
+bool readWordsFile(ifstream& file, vector<WordStruct>& wordsList) {
     WordStruct wordTemp;
-    if (ftype == fileType::english) {
-        while (true) {
-            if (!(getline(file, wordTemp.wordMeaning) &&
-                getline(file, wordTemp.word) &&
-                getline(file, wordTemp.wordRoma))) {
-                cout << "file is broken" << endl;
-                return;
+    string temp;
+
+    if (getline(file, temp)) {
+        if (temp == "English" || temp == "english") {
+            while (true) {
+                if (!(getline(file, wordTemp.wordMeaning) &&
+                    getline(file, wordTemp.word) &&
+                    getline(file, wordTemp.wordRoma))) {
+                    cout << "file is broken" << endl;
+                    return true;
+                }
+                wordsList.push_back(wordTemp);
             }
-            wordsList.push_back(wordTemp);
+        }
+        else if (temp == "Typing" || temp == "typing") {
+            while (true) {
+                if (!(getline(file, wordTemp.word) && getline(file, wordTemp.wordRoma))) {
+                    cout << "file is broken" << endl;
+                    return true;
+                }
+                wordTemp.wordMeaning = "";
+                wordsList.push_back(wordTemp);
+            }
+        }
+        else {
+            cout << "file format error" << endl;
+            cout << "ファイルの形式が選ばれていません" << endl;
+            return false;
         }
     }
     else {
-        while(true){
-            if(!(getline(file, wordTemp.word) && getline(file, wordTemp.wordRoma))){
-                cout << "file is broken" << endl;
-                return;
-            }
-            wordTemp.wordMeaning = "";
-            wordsList.push_back(wordTemp);
-        }
+        cout << "ファイルが空です" << endl;
+        return false;
     }
+
     cout << "succeed to read" << endl;
+    return true;
 }
 
 void removeLFCR(vector<WordStruct>& wordsList) {
+    for (WordStruct i : wordsList) {
+        removeLFCRStr(i.wordMeaning);
+        removeLFCRStr(i.word);
+        removeLFCRStr(i.wordRoma);
+    }
+}
 
+void removeLFCRStr(string& str) {
+    if (str[str.length() - 1] == '\n') {
+        str.erase(str.length() - 1);
+    }
+    if (str[str.length() - 1] == '\r') {
+        str.erase(str.length() - 1);
+    }
 }
 
 Mode setMode() {
-
+    char input;
+    cout << "動作モードを設定します" << endl;
+    do {
+        cout << "Marathonモードなら 0 or m" << '\n'
+            << "Practiceモードなら 1 or p" << '\n'
+            << "Speedモードなら 2 or s" << '\n'
+            << "Testモードなら 3 or t" << '\n'
+            << "単語ファイル関係の設定なら 4 or w を入力してください : ";
+        input = cin.get();
+        switch (input) {
+        case '0':
+        case 'm':
+            cout << "Marathonモードに設定されました" << endl;
+            return Mode::marathon;
+        case '1':
+        case 'p':
+            cout << "Practiceモードに設定されました" << endl;
+            return Mode::practice;
+        case '2':
+        case 's':
+            cout << "Speedモードに設定されました" << endl;
+            return Mode::speed;
+        case '3':
+        case 't':
+            cout << "Testモードに設定されました" << endl;
+            return Mode::test;
+        case '4':
+        case 'w':
+            cout << "単語ファイルの設定を行います" << endl;
+            return Mode::wordConfig;
+        default:
+            cout << "正しい値を入力してください" << endl;
+        }
+    } while (true);
 }
