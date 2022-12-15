@@ -30,7 +30,7 @@ enum class fileType
 {
     english,
     typing
-}
+};
 
 // 一単語の構成
 struct WordStruct
@@ -79,9 +79,9 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    void readWordsFile(file, wordsList);
+    readWordsFile(file, wordsList);
 
-    void removeLFCR(wordsList);
+    removeLFCR(wordsList);
 
     mode = setMode();
 
