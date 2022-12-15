@@ -25,7 +25,8 @@ enum class Mode
     marathon,
     speed,
     test,
-    wordConfig
+    wordConfig,
+    breakLoop
 };
 
 // 一単語の構成
@@ -40,6 +41,8 @@ bool readWordsFile(ifstream&, vector<WordStruct>&);
 void removeLFCR(vector<WordStruct>&);
 void removeLFCRStr(string&);
 Mode setMode();
+void startTyping();
+void marathonTyping(const vector<WordStruct>&, Mode);
 
 int main(int argc, char** argv) {
     Mode mode;
@@ -72,26 +75,24 @@ int main(int argc, char** argv) {
     }
 
     if (!readWordsFile(file, wordsList)) {
-        cout << "プログラムを停止します" << endl;
         return 0;
     }
 
-    removeLFCR(wordsList);
-
     mode = setMode();
 
-    switch ((int)mode) {
-    case (int)Mode::marathon:
-        break;
-    case (int)Mode::practice:
-        break;
-    case (int)Mode::speed:
-        break;
-    case (int)Mode::test:
-        break;
-    case (int)Mode::wordConfig:
-        break;
-    }
+    // switch ((int)mode) {
+    // case (int)Mode::marathon:
+    //     break;
+    // case (int)Mode::practice:
+    //     break;
+    // case (int)Mode::speed:
+    //     break;
+    // case (int)Mode::test:
+    //     break;
+    // case (int)Mode::wordConfig:
+    //     break;
+    // case (int)Mode::breakLoop:
+    // }
 }
 
 // 単語ファイルの読み込み
@@ -132,6 +133,7 @@ bool readWordsFile(ifstream& file, vector<WordStruct>& wordsList) {
         cout << "ファイルが空です" << endl;
         return false;
     }
+    removeLFCR(wordsList);
 
     cout << "succeed to read" << endl;
     return true;
@@ -189,4 +191,24 @@ Mode setMode() {
             cout << "正しい値を入力してください" << endl;
         }
     } while (true);
+}
+
+void startTyping(vector<WordStruct>& WordsList, Mode mode){
+    switch ((int)mode) {
+    case (int)Mode::marathon:
+        break;
+    case (int)Mode::practice:
+        break;
+    case (int)Mode::speed:
+        break;
+    case (int)Mode::test:
+        break;
+    case (int)Mode::wordConfig:
+        break;
+    case (int)Mode::breakLoop:
+    }
+}
+
+void marathonTyping(const vector<WordStruct>& wordsList){
+
 }
