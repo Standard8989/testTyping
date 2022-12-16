@@ -40,12 +40,22 @@ struct WordStruct {
     string wordRoma;
 };
 
+struct TypingFuncConfig {
+
+};
+
+struct TypingFuncReturnValue {
+
+};
+
 bool readWordsFile(ifstream&, vector<WordStruct>&);
 void removeLFCR(vector<WordStruct>&);
 void removeLFCRStr(string&);
 Mode setMode();
 void startTyping(vector<WordStruct>&, Mode&);
 int marathonTyping(const vector<WordStruct>&);
+int practiceTyping(const vector<WordStruct>&);
+void typeWord(string, time_t, TypingFuncConfig&, TypingFuncReturnValue&);
 
 int main(int argc, char** argv) {
     Mode mode;
@@ -116,13 +126,13 @@ bool readWordsFile(ifstream& file, vector<WordStruct>& wordsList) {
                 wordsList.push_back(wordTemp);
             }
         }
-        else if(temp == "Test" || temp == "test") {
+        else if (temp == "Test" || temp == "test") {
             while (true) {
                 if (!(getline(file, wordTemp.wordMeaning) &&
                     getline(file, wordTemp.word) &&
                     getline(file, wordTemp.wordRoma))) {
-                        cout << "file is broken" << endl;
-                        return true;
+                    cout << "file is broken" << endl;
+                    return true;
                 }
                 wordsList.push_back(wordTemp);
             }
@@ -152,7 +162,7 @@ void removeLFCR(vector<WordStruct>& wordsList) {
     }
 }
 
-// 改行コードを取り除く
+// 改行コードを取り除く : string
 void removeLFCRStr(string& str) {
     if (str[str.length() - 1] == '\n')
         str.erase(str.length() - 1);
@@ -160,6 +170,7 @@ void removeLFCRStr(string& str) {
         str.erase(str.length() - 1);
 }
 
+// モードの設定
 Mode setMode() {
     char input;
     cout << "動作モードを設定します" << endl;
@@ -197,6 +208,7 @@ Mode setMode() {
     } while (true);
 }
 
+// タイピングスタート
 void startTyping(vector<WordStruct>& WordsList, Mode& mode) {
     int flag = 0;
     while (true) {
@@ -223,12 +235,32 @@ void startTyping(vector<WordStruct>& WordsList, Mode& mode) {
     }
 }
 
+// marathonモード本体
 int marathonTyping(const vector<WordStruct>& wordsList) {
-    for (WordStruct i : wordsList) {
-        cout << i.wordMeaning << endl;
-        cout << i.word << endl;
-        cout << i.wordRoma << endl;
-    }
 
     return F_EXIT;
+}
+
+// practiceモード本体
+int practiceTyping(const vector<WordStruct>& wordsList) {
+
+}
+
+// speedモード本体
+int speedTyping(const vector<WordStruct>& wordsList) {
+
+}
+
+// testモード本体
+int testTyping(const vector<WordStruct>& wordsList) {
+
+}
+
+// 単語ファイルの設定
+int wordConfig()
+
+// タイピング1ワード分
+// 引数は左からワード, 関数呼び出し時の時間, 関数に渡す引数をまとめたもの, 戻り値用構造体
+void typeWord(string word, time_t now, const TypingFuncConfig& config, TypingFuncReturnValue& returnValue) {
+
 }
