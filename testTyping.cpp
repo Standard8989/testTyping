@@ -2,10 +2,13 @@
 // 1ワードの構成(暫定)
 // Englishファイル
 //  単語の意味
-//  単語(日本語)
-//  単語(ローマ字)
+//  単語
 // Typingファイル
-//  単語(日本語)
+//  単語
+//  単語(ローマ字)
+// Testファイル
+//  単語の意味
+//  単語
 //  単語(ローマ字)
 #include <iostream>
 #include <fstream>
@@ -94,11 +97,11 @@ bool readWordsFile(ifstream& file, vector<WordStruct>& wordsList) {
         if (temp == "English" || temp == "english") {
             while (true) {
                 if (!(getline(file, wordTemp.wordMeaning) &&
-                    getline(file, wordTemp.word) &&
                     getline(file, wordTemp.wordRoma))) {
                     cout << "file is broken" << endl;
                     return true;
                 }
+                wordTemp.word = "";
                 wordsList.push_back(wordTemp);
             }
         }
@@ -110,6 +113,17 @@ bool readWordsFile(ifstream& file, vector<WordStruct>& wordsList) {
                     return true;
                 }
                 wordTemp.wordMeaning = "";
+                wordsList.push_back(wordTemp);
+            }
+        }
+        else if(temp == "Test" || temp == "test") {
+            while (true) {
+                if (!(getline(file, wordTemp.wordMeaning) &&
+                    getline(file, wordTemp.word) &&
+                    getline(file, wordTemp.wordRoma))) {
+                        cout << "file is broken" << endl;
+                        return true;
+                }
                 wordsList.push_back(wordTemp);
             }
         }
