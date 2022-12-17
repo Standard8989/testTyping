@@ -1,4 +1,4 @@
-// testTyping.exe {wordsFile}
+// testTyping.exe {wordsFile} -nt
 // 1ワードの構成(暫定)
 // Englishファイル
 //  単語の意味
@@ -15,10 +15,12 @@
 #include <filesystem>
 #include <vector>
 #include <conio.h>
+#include <cstring>
 using namespace std;
 
 #define ESCAPE_CODE 0x1B
-#define ARGS_NUM 2
+#define ARGS_NUM_MIN 2
+#define ARGS_NUM_MAX 3
 #define PRACTICE_NUM 30
 #define F_SELECT_MODE 0x01u
 #define F_RETRY 0x02u
@@ -44,7 +46,7 @@ struct WordStruct {
 };
 
 struct TypingFuncConfig {
-
+    bool isTimeCountOn;
 };
 
 struct TypingFuncReturnValue {
@@ -52,6 +54,11 @@ struct TypingFuncReturnValue {
     int correctTypeCount = 0;
     int incorrectTypeCount = 0;
 };
+
+struct argvOptions {
+    bool isTimeCountOn = false;
+};
+
 
 class TypingScore {
 public:
@@ -63,7 +70,7 @@ public:
 
     TypingScore(): wordsCount(0), correctTypeCount(0), incorrectTypeCount(0) { }
 
-    coutScore() {
+    void coutScore() {
 
     }
 };
@@ -72,22 +79,23 @@ bool readWordsFile(ifstream&, vector<WordStruct>&);
 void removeLFCR(vector<WordStruct>&);
 void removeLFCRStr(string&);
 Mode setMode();
-void startTyping(vector<WordStruct>&, Mode&, string);
-int marathonTyping(const vector<WordStruct>&);
-int practiceTyping(const vector<WordStruct>&);
-void typeWord(WordStruct, time_t, TypingFuncConfig&, TypingFuncReturnValue&);
+void startTyping(vector<WordStruct>&, Mode&, const argvOptions&);
+int marathonTyping(const vector<WordStruct>&, const argvOptions&);
+int practiceTyping(const vector<WordStruct>&, const argvOptions&);
+void typeWord(const WordStruct&, time_t, const TypingFuncConfig&, TypingFuncReturnValue&);
 
 int main(int argc, char** argv) {
     Mode mode;
     vector<WordStruct> wordsList;
     ifstream file;
     string temp;
+    argvOptions argvList;
 
     system("chcp 65001 > nul");
     srand(time(NULL));
 
     // 引数チェック
-    if (argc != ARGS_NUM) {
+    if (argc < ARGS_NUM_MIN || argc > ARGS_NUM_MAX) {
         cout << "引数を確認してください" << endl;
         return 0;
     }
@@ -111,8 +119,12 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    if (argc > 2) {
+        argvList.isTimeCountOn = strcmp(argv[2], "-nt") ? false : true;
+    }
+
     mode = setMode();
-    startTyping(wordsList, mode, argv[1]);
+    startTyping(wordsList, mode, argvList);
 
     return 0;
 }
@@ -193,6 +205,7 @@ void removeLFCRStr(string& str) {
 // モードの設定
 Mode setMode() {
     char input;
+    system("cls");
     cout << "動作モードを設定します" << endl;
     do {
         cout << "Marathonモードなら 0 or m" << '\n'
@@ -200,7 +213,8 @@ Mode setMode() {
             << "Speedモードなら 2 or s" << '\n'
             << "Testモードなら 3 or t" << '\n'
             << "単語ファイル関係の設定なら 4 or w を入力してください : ";
-        input = cin.get();
+        input = getch();
+        cout << endl;
         switch (input) {
         case '0':
         case 'm':
@@ -229,12 +243,13 @@ Mode setMode() {
 }
 
 // タイピングスタート
-void startTyping(vector<WordStruct>& WordsList, Mode& mode, string wordFilePath) {
+void startTyping(vector<WordStruct>& WordsList, Mode& mode, const argvOptions& argvList) {
     int flag = 0;
+
     while (true) {
         switch ((int)mode) {
         case (int)Mode::marathon:
-            flag = marathonTyping(WordsList);
+            flag = marathonTyping(WordsList, argvList);
             break;
         case (int)Mode::practice:
             break;
@@ -258,13 +273,14 @@ void startTyping(vector<WordStruct>& WordsList, Mode& mode, string wordFilePath)
 }
 
 // marathonモード本体
-int marathonTyping(const vector<WordStruct>& wordsList) {
+int marathonTyping(const vector<WordStruct>& wordsList, const argvOptions& argvList) {
     TypingScore score;
     WordStruct nowTyping;
     int typeWordIndex = 0;
     TypingFuncConfig cfg;
     TypingFuncReturnValue returnValue;
     int gotCh = 0;
+    cfg.isTimeCountOn = argvList.isTimeCountOn;
 
     cout << "キーを入力してスタート" << endl;
     while (!kbhit()) {}
@@ -276,7 +292,7 @@ int marathonTyping(const vector<WordStruct>& wordsList) {
         typeWordIndex = rand() % wordsList.size();
         nowTyping = wordsList.at(typeWordIndex);
 
-        typeWord(nowTyping, time(NULL), cfg, returnValue);
+        typeWord(nowTyping, score.startTime, cfg, returnValue);
         if (returnValue.flag == F_NORMAL_END) {
             continue;
         }
@@ -295,8 +311,9 @@ int marathonTyping(const vector<WordStruct>& wordsList) {
     score.coutScore();
 
     while (true) {
-        cout << "練習を続けますか？(y/n) : " << flush;
+        cout << '\n' << "リトライしますか？(y/n) : " << flush;
         gotCh = getch();
+        cout << endl;
         if (gotCh == 'y' || gotCh == 'Y') {
             return F_RETRY;
         }
@@ -304,6 +321,7 @@ int marathonTyping(const vector<WordStruct>& wordsList) {
             while (true) {
                 cout << "モード選択に戻りますか？戻らない場合はそのままソフトを終了します(y/n) : " << flush;
                 gotCh = getch();
+                cout << endl;
                 if (gotCh == 'y' || gotCh == 'Y') {
                     return F_SELECT_MODE;
                 }
@@ -311,7 +329,7 @@ int marathonTyping(const vector<WordStruct>& wordsList) {
                     return F_EXIT;
                 }
                 else {
-                    cout << "正しい値を入力してください"
+                    cout << "正しい値を入力してください" << endl;
                 }
             }
         }
@@ -322,27 +340,72 @@ int marathonTyping(const vector<WordStruct>& wordsList) {
 }
 
 // practiceモード本体
-int practiceTyping(const vector<WordStruct>& wordsList) {
-
+int practiceTyping(const vector<WordStruct>& wordsList, argvOptions argvList) {
+    return F_EXIT;
 }
 
 // speedモード本体
-int speedTyping(const vector<WordStruct>& wordsList) {
-
+int speedTyping(const vector<WordStruct>& wordsList, const argvOptions& argvList) {
+    return F_EXIT;
 }
 
 // testモード本体
-int testTyping(const vector<WordStruct>& wordsList) {
-
+int testTyping(const vector<WordStruct>& wordsList, const argvOptions& argvList) {
+    return F_EXIT;
 }
 
 // 単語ファイルの設定
 int wordConfig(const vector<WordStruct>& wordsList, string wordFilePath) {
-
+    return F_EXIT;
 }
 
 // タイピング1ワード分
 // 引数は左からワード, 関数呼び出し時の時間, 関数に渡す引数をまとめたもの, 戻り値用構造体
-void typeWord(WordStruct word, time_t now, const TypingFuncConfig& config, TypingFuncReturnValue& returnValue) {
+void typeWord(const WordStruct& word, time_t startTime, const TypingFuncConfig& config, TypingFuncReturnValue& returnValue) {
+    int wordLength = word.wordRoma.length();
+    int gotChar = 0;
+    system("cls");
 
+    if (config.isTimeCountOn) {
+
+    }
+    else {
+        cout << "time : " << time(NULL) - startTime << endl;
+        if (word.wordMeaning != "") {
+            cout << word.wordMeaning << endl;
+        }
+        if (word.word != "") {
+            cout << word.word << endl;
+        }
+
+        for (int i = 0;i < wordLength;i++) {
+            for (int j = i;j < wordLength;j++) {
+                putchar(word.wordRoma.at(j));
+            }
+            for (int j = 0;j < i;j++) {
+                putchar(' ');
+            }
+            fflush(stdout);
+
+            do {
+                gotChar = getch();
+                if (gotChar == word.wordRoma.at(i)) {
+                    returnValue.correctTypeCount++;
+                    break;
+                }
+                else if (gotChar == ESCAPE_CODE) {
+                    returnValue.flag = F_ESCAPE;
+                    return;
+                }
+                else {
+                    returnValue.incorrectTypeCount++;
+                }
+            } while (true);
+
+            for (int j = 0;j < wordLength;j++) {
+                putchar('\b');
+            }
+        }
+        returnValue.flag = F_NORMAL_END;
+    }
 }
