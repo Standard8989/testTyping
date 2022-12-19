@@ -78,7 +78,7 @@ public:
         cout << '\t' << "ワード数 : " << wordsCount << endl;
         cout << '\t' << "タイプミス率 (%) : " << (correctTypeCount != 0 ? (double)incorrectTypeCount / correctTypeCount * 100 : 0) << endl;
         cout << '\t' << "タイプ速度 (type/s) : " << (countTime != 0 ? (double)correctTypeCount / countTime : 0) << endl;
-        cout << '\t' << "タイプ速度 (word/s) : " << (countTime != 0 ? (double)wordsCount / countTime : 0) << endl;
+        cout << '\t' << "タイプ速度 (wpm) : " << (countTime != 0 ? (double)wordsCount / countTime * 60 : 0) << endl;
         cout << '\t' << "練習時間 (s) : " << countTime << endl;
     }
 };
@@ -303,7 +303,7 @@ int marathonTyping(const vector<WordStruct>& wordsList, const argvOptions& argvL
 
         typeWord(nowTyping, score.startTime, cfg, returnValue);
         if (returnValue.flag == F_NORMAL_END) {
-            score.wordsCount;
+            score.wordsCount++;
             continue;
         }
         else if (returnValue.flag == F_ESCAPE) {
