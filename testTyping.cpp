@@ -103,16 +103,24 @@ int main(int argc, char** argv) {
     srand(time(NULL));
 
     // 引数チェック
-    if (argc < ARGS_NUM_MIN || argc > ARGS_NUM_MAX) {
-        cout << "引数を確認してください" << endl;
-        return 0;
+    if (argc > ARGS_NUM_MAX) {
+        cout << "引数の個数が多すぎます" << endl;
+        cout << "一部を無視して続行します" << endl;
+    }
+
+    // ファイルパスの指定
+    if (argc < ARGS_NUM_MIN) {
+        cout << "ファイルパスが指定されていません" << endl;
+        cout << "ファイルパスを指定してください : " << flush;
+        cin >> temp;
+        argv[1] = const_cast<char*>(temp.c_str());
     }
 
     // ファイルが存在しない場合は新たに指定,存在する場合はそのままファイルオープン
     if (!filesystem::exists({ argv[1] })) {
         do {
             cout << "ファイルが存在しません" << endl;
-            cout << "ファイルパスを指定してください" << endl;
+            cout << "ファイルパスを指定してください : " << flush;
             cin >> temp;
         } while (!filesystem::exists(temp));
         argv[1] = const_cast<char*>(temp.c_str());
