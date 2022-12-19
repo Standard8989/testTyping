@@ -71,7 +71,15 @@ public:
     TypingScore(): wordsCount(0), correctTypeCount(0), incorrectTypeCount(0) { }
 
     void coutScore() {
-
+        time_t countTime = endTime - startTime;
+        cout << "score : " << endl;
+        cout << '\t' << "タイプミス数 : " << incorrectTypeCount << endl;
+        cout << '\t' << "成功タイプ数 : " << correctTypeCount << endl;
+        cout << '\t' << "ワード数 : " << wordsCount << endl;
+        cout << '\t' << "タイプミス率 (%) : " << (correctTypeCount != 0 ? (double)incorrectTypeCount / correctTypeCount * 100 : 0) << endl;
+        cout << '\t' << "タイプ速度 (type/s) : " << (countTime != 0 ? (double)correctTypeCount / countTime : 0) << endl;
+        cout << '\t' << "タイプ速度 (word/s) : " << (countTime != 0 ? (double)wordsCount / countTime : 0) << endl;
+        cout << '\t' << "練習時間 (s) : " << countTime << endl;
     }
 };
 
@@ -107,6 +115,7 @@ int main(int argc, char** argv) {
             cout << "ファイルパスを指定してください" << endl;
             cin >> temp;
         } while (!filesystem::exists(temp));
+        argv[1] = const_cast<char*>(temp.c_str());
     }
 
     file.open(argv[1]);
@@ -294,6 +303,7 @@ int marathonTyping(const vector<WordStruct>& wordsList, const argvOptions& argvL
 
         typeWord(nowTyping, score.startTime, cfg, returnValue);
         if (returnValue.flag == F_NORMAL_END) {
+            score.wordsCount;
             continue;
         }
         else if (returnValue.flag == F_ESCAPE) {
@@ -308,6 +318,7 @@ int marathonTyping(const vector<WordStruct>& wordsList, const argvOptions& argvL
 
     score.correctTypeCount = returnValue.correctTypeCount;
     score.incorrectTypeCount = returnValue.incorrectTypeCount;
+    cout << "終了しました" << endl;
     score.coutScore();
 
     while (true) {
