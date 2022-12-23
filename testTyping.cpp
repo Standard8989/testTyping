@@ -91,6 +91,8 @@ void startTyping(vector<WordStruct>&, Mode&, const argvOptions&);
 int marathonTyping(const vector<WordStruct>&, const argvOptions&);
 int practiceTyping(const vector<WordStruct>&, const argvOptions&);
 void typeWord(const WordStruct&, time_t, const TypingFuncConfig&, TypingFuncReturnValue&);
+bool makeWordsFile(vector<WordStruct>&, char*);
+void getFileList(filesystem::path, vector<filesystem::directory_entry>&);
 
 int main(int argc, char** argv) {
     Mode mode;
@@ -126,24 +128,71 @@ int main(int argc, char** argv) {
         argv[1] = const_cast<char*>(temp.c_str());
     }
 
-    file.open(argv[1]);
-    if (!file) {
-        cout << "file error" << endl;
+    if(!makeWordsFile(wordsList, argv[1])) {
         return 0;
     }
 
-    if (!readWordsFile(file, wordsList)) {
-        return 0;
-    }
+    // file.open(argv[1]);
+    // if (!file) {
+    //     cout << "file error" << endl;
+    //     return 0;
+    // }
 
-    if (argc > 2) {
-        argvList.isTimeCountOn = strcmp(argv[2], "-nt") ? false : true;
-    }
+    // if (!readWordsFile(file, wordsList)) {
+    //     return 0;
+    // }
+
+    // if (argc > 2) {
+    //     argvList.isTimeCountOn = strcmp(argv[2], "-nt") ? false : true;
+    // }
 
     mode = setMode();
     startTyping(wordsList, mode, argvList);
 
     return 0;
+}
+
+// 総合的な単語ファイルの作成
+// 成功時はtrue, 失敗時はfalseを返す
+bool makeWordsFile(vector<WordStruct>& wordsList, char* filePathStr) {
+    filesystem::path filePath(filePathStr);
+    if(filesystem::is_regular_file(filePath)){
+        ifstream file;
+        file.open(filePath);
+        if(!file) {
+            return false;
+        }
+        if(!readWordsFile(file, wordsList)) {
+            return false;
+        }
+        file.close();
+    }
+    else if(filesystem::is_directory(filePath)) {
+        vector<filesystem::directory_entry> fileList;
+        getFileList(filePath, fileList);
+        ifstream file;
+        for(auto i : fileList) {
+            file.open(i.path());
+            readWordsFile(file, wordsList);
+            file.close();
+        }
+    }
+    else {
+        cout << "file read error" << endl;
+        cout << "対応していないパスです" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+// accessFile以下のファイルを取得する
+void getFileList(filesystem::path accessFile, vector<filesystem::directory_entry>& fileListOutput) {
+        for (const auto& fileName : filesystem::directory_iterator(accessFile)) {
+            if (fileName.status().type() == filesystem::file_type::regular) {
+                fileListOutput.push_back(fileName);
+            }
+        }
 }
 
 // 単語ファイルの読み込み
@@ -359,7 +408,7 @@ int marathonTyping(const vector<WordStruct>& wordsList, const argvOptions& argvL
 }
 
 // practiceモード本体
-int practiceTyping(const vector<WordStruct>& wordsList, argvOptions argvList) {
+int practiceTyping(const vector<WordStruct>& wordsList, argvOptions& argvList) {
     return F_EXIT;
 }
 
